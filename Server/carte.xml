@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<all>
+	<colors>
+		<color>Rosso</color>
+		<color>Verde</color>
+		<color>Blu</color>
+		<color>Giallo</color>
+	</colors>
+	<cards>
+		<number colored="true" much="19" color="">
+		</number>
+		<wColor colored="true" much="8" color="">
+		</wColor>
+		<noColor colored="false" much="4">
+		</noColor>
+	</cards>
+	<listAll>
+		<n group="number">0</n>
+		<n group="number">1</n>
+		<n group="number">2</n>
+		<n group="number">3</n>
+		<n group="number">4</n>
+		<n group="number">5</n>
+		<n group="number">6</n>
+		<n group="number">7</n>
+		<n group="number">8</n>
+		<n group="number">9</n>
+		
+		<n group="wColor">Blocco</n>
+		<n group="wColor">Cambio giro</n>
+		<n group="wColor">+2</n>
+		
+		<n group="noColor">Cambio colore</n>
+		<n group="noColor">+4</n>
+	</listAll>
+</all>
