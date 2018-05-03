@@ -137,7 +137,9 @@ public class keephearing implements Runnable {
 				case 42:
 					String color = (String) inObj.readObject();
 					if(this.nickname.compareTo(currentPName())==0) {
+						System.out.println("Mi hanno inviato "+color+" \nlast card vale "+myServer.lastCard.toString());
 						myServer.specialColor.set(color);
+						myServer.myTimer.notify();
 					}
 					break;
 				default:
@@ -337,12 +339,23 @@ public class keephearing implements Runnable {
 		myServer.lastCard.clear();
 
 		myServer.lastCard = trovaCartaCompleteHashMap(idCard);
+		
+		if(isSpecialCard(myServer.playerCards.get(currentPName()).get(idCard))) {
+			writeToCurrentP(42);
+			try {
+				System.out.println("Hai usato una carta speciale");
+				synchronized(myServer.myTimer) {
+					myServer.myTimer.wait();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 
 		myServer.playerCards.get(currentPName()).remove(idCard);
 
 		myServer.ttApp.set(false);
 		
-		writeToCurrentP(42);
 		myServer.myTimer.interrupt();
 	}
 

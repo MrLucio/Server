@@ -26,7 +26,7 @@ public class Server {
 	AtomicBoolean acceptConn=new AtomicBoolean();
 	public AtomicBoolean ttApp=new AtomicBoolean(true);
 	public AtomicBoolean hasDraw=new AtomicBoolean(false);
-	public AtomicReference<String> specialColor=new AtomicReference<String>();
+	public AtomicReference<String> specialColor=new AtomicReference<String>("");
 	public Thread myTimer = new Thread();
 	Thread myNewConnections;
 	public creaMazzo mazzo;
@@ -64,8 +64,6 @@ public class Server {
 					t1 =new gameCore.gameStart(s);
 					t1.start();
 					s.acceptConn.set(false);
-					System.err.println("Sono "+s.myNewConnections.isInterrupted());
-					//s.myNewConnections.interrupt();
 				}
 				else
 					System.out.println("Numero di giocatori insufficiente");
