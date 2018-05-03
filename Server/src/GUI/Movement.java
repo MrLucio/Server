@@ -1,4 +1,4 @@
-package GUI;
+package GUI; // commento
 
 import java.awt.Component;
 import java.awt.event.MouseEvent;
