@@ -21,15 +21,21 @@ public class gameCore implements Runnable {
 	public synchronized void run() {
 		try {
 			while (stillPlaying.get()) {
-				sendPlayers();
-				game.myServer.hasDraw.set(false);
-				for (int i = 20; i > 0 && game.myServer.ttApp.get(); i--) {
-
-					game.myServer.myTimer.sleep(1000);
-					sendTiming(i);
-
+				if(!game.myServer.interrupted.get()) {
+					sendPlayers();
+					game.myServer.hasDraw.set(false);
+					for (int i = 20; i > 0 && game.myServer.ttApp.get(); i--) {
+						while(game.myServer.interrupted.get()) {
+							Thread.sleep(1000);
+							sendTiming(i);
+						}
+						Thread.sleep(1000);
+						sendTiming(i);
+	
+					}
+					if(!game.myServer.interrupted.get())
+						nextPlayer();
 				}
-				nextPlayer();
 			}
 		} catch (InterruptedException | IOException e) {
 			System.out.println("Connessione interrotta : un utente si è disconnesso");

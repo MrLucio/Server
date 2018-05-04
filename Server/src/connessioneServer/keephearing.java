@@ -136,10 +136,17 @@ public class keephearing implements Runnable {
 					break;
 				case 42:
 					String color = (String) inObj.readObject();
-					if(this.nickname.compareTo(currentPName())==0) {
+					String nameOfPlayer = (String) inObj.readObject();
+					System.out.println("Ho ricevuto il color "+color);
+					System.out.println("name vale "+nameOfPlayer+" currentName vale "+currentPName());
+					if(nameOfPlayer.compareTo(currentPName())==0) {
 						System.out.println("Mi hanno inviato "+color+" \nlast card vale "+myServer.lastCard.toString());
-						myServer.specialColor.set(color);
-						myServer.myTimer.notify();
+						System.out.println("Prima lastCard vale "+myServer.lastCard.toString());
+						myServer.lastCard.values().iterator().next().put("color", color);
+						System.out.println("Ora lastCard vale "+myServer.lastCard.toString());
+						myServer.interrupted.set(false);
+						writeAllNoCurrent(100);
+						writeAllNoCurrent(currentPName()+" ha cambiato colore in "+color);
 					}
 					break;
 				default:
@@ -342,21 +349,15 @@ public class keephearing implements Runnable {
 		
 		if(isSpecialCard(myServer.playerCards.get(currentPName()).get(idCard))) {
 			writeToCurrentP(42);
-			try {
-				System.out.println("Hai usato una carta speciale");
-				synchronized(myServer.myTimer) {
-					myServer.myTimer.wait();
-				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			myServer.interrupted.set(true);
+			System.out.println("Hai usato una carta speciale");
 		}
 
 		myServer.playerCards.get(currentPName()).remove(idCard);
 
 		myServer.ttApp.set(false);
 		
-		myServer.myTimer.interrupt();
+		
 	}
 
 	public synchronized int[] coordinateMazzo(HashMap<String, String> carta) {
@@ -406,13 +407,6 @@ public class keephearing implements Runnable {
 			equalities++;
 			return equalities;
 		}
-		if(isSpecialCard(tempLastCard)) {
-			if (tempLastCard.get("color").compareTo(myServer.specialColor.get())==0) {
-				equalities++;
-				myServer.specialColor.set("");
-				return equalities;
-			}
-		}
 		else {
 			for (String c : b) {
 				if (tempLastCard.get(c).compareTo(a.get(c)) == 0)
@@ -431,5 +425,33 @@ public class keephearing implements Runnable {
 		if(a.get("color").compareTo("")==0)
 			return true;
 		return false;
+	}
+	public synchronized void writeAllNoCurrent(int message) {
+		for(Entry<String,HashMap<ObjectInputStream,ObjectOutputStream>> a : myServer.players.entrySet()) {
+			if(a.getKey().compareTo(currentPName())!=0) {
+				try {
+					for(ObjectOutputStream b : a.getValue().values()) {
+						b.writeObject(message);
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	public synchronized void writeAllNoCurrent(String message) {
+		for(Entry<String,HashMap<ObjectInputStream,ObjectOutputStream>> a : myServer.players.entrySet()) {
+			if(a.getKey().compareTo(currentPName())!=0) {
+				try {
+					for(ObjectOutputStream b : a.getValue().values()) {
+						b.writeObject(message);
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }

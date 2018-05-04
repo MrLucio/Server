@@ -26,8 +26,7 @@ public class Server {
 	AtomicBoolean acceptConn=new AtomicBoolean();
 	public AtomicBoolean ttApp=new AtomicBoolean(true);
 	public AtomicBoolean hasDraw=new AtomicBoolean(false);
-	public AtomicReference<String> specialColor=new AtomicReference<String>("");
-	public Thread myTimer = new Thread();
+	public AtomicBoolean interrupted = new AtomicBoolean(false);
 	Thread myNewConnections;
 	public creaMazzo mazzo;
 	public int idCard = 1;
