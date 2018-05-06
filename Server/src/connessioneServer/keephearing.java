@@ -86,8 +86,9 @@ public class keephearing implements Runnable {
 						// System.out.println("Mi è arrivata la carta con id " + idCard + " da " +
 						// trovaCarta(idCard, 0));
 						System.out.println(myServer.lastCard.toString());
-						//System.out.println(comparaCarta(myServer.playerCards.get(trovaCarta(idCard, 0)).get(idCard))
-						//		+ " con id " + idCard);
+						// System.out.println(comparaCarta(myServer.playerCards.get(trovaCarta(idCard,
+						// 0)).get(idCard))
+						// + " con id " + idCard);
 						if (comparaCarta(myServer.playerCards.get(trovaCarta(idCard, 0)).get(idCard)) > 0) { // VERIFICA
 																												// TRA
 																												// CARTA
@@ -98,10 +99,10 @@ public class keephearing implements Runnable {
 																												// USATA
 
 							updateLastCard(idCard);
-							//System.out.println("La carta è dello stesso colore");
+							// System.out.println("La carta è dello stesso colore");
 
 						} else { // COLORI DELLE CARTE DIVERSI
-							//System.out.println("Colori diversi");
+							// System.out.println("Colori diversi");
 							writeToCurrentP(22);
 						}
 
@@ -109,27 +110,24 @@ public class keephearing implements Runnable {
 					break;
 				case 27:
 					String name = (String) inObj.readObject();
-					if(!myServer.hasDraw.get()) {
-						if(name.compareTo(currentPName())==0) {
+					if (!myServer.hasDraw.get()) {
+						if (name.compareTo(currentPName()) == 0) {
 							writeToCurrentP(27);
 							writeToCurrentP(1);
-							HashMap<Integer,HashMap<String,String>> tempCard = new HashMap<Integer,HashMap<String,String>>();
-							HashMap<String,String> cartaPescata=myServer.mazzo.pescaCarta();
+							HashMap<Integer, HashMap<String, String>> tempCard = new HashMap<Integer, HashMap<String, String>>();
+							HashMap<String, String> cartaPescata = myServer.mazzo.pescaCarta();
 							tempCard.put(myServer.idCard, cartaPescata);
 							myServer.playerCards.get(currentPName()).put(myServer.idCard, cartaPescata);
 							myServer.idCard++;
 							writeToCurrentP(tempCard);
-							int [] coord = myServer.mazzo.coordinateMazzo(cartaPescata);
+							int[] coord = myServer.mazzo.coordinateMazzo(cartaPescata);
 							writeToCurrentP(coord);
-							//myServer.ttApp.set(false);
 							myServer.hasDraw.set(true);
-						}
-						else {
+						} else {
 							myServer.players.get(name).values().iterator().next().writeObject(27);
 							myServer.players.get(name).values().iterator().next().writeObject(0);
 						}
-					}
-					else {
+					} else {
 						myServer.players.get(name).values().iterator().next().writeObject(27);
 						myServer.players.get(name).values().iterator().next().writeObject(2);
 					}
@@ -137,16 +135,17 @@ public class keephearing implements Runnable {
 				case 42:
 					String color = (String) inObj.readObject();
 					String nameOfPlayer = (String) inObj.readObject();
-					System.out.println("Ho ricevuto il color "+color);
-					System.out.println("name vale "+nameOfPlayer+" currentName vale "+currentPName());
-					if(nameOfPlayer.compareTo(currentPName())==0) {
-						System.out.println("Mi hanno inviato "+color+" \nlast card vale "+myServer.lastCard.toString());
-						System.out.println("Prima lastCard vale "+myServer.lastCard.toString());
+					System.out.println("Ho ricevuto il color " + color);
+					System.out.println("name vale " + nameOfPlayer + " currentName vale " + currentPName());
+					if (nameOfPlayer.compareTo(currentPName()) == 0) {
+						System.out.println(
+								"Mi hanno inviato " + color + " \nlast card vale " + myServer.lastCard.toString());
+						System.out.println("Prima lastCard vale " + myServer.lastCard.toString());
 						myServer.lastCard.values().iterator().next().put("color", color);
-						System.out.println("Ora lastCard vale "+myServer.lastCard.toString());
+						System.out.println("Ora lastCard vale " + myServer.lastCard.toString());
 						myServer.interrupted.set(false);
 						writeAllNoCurrent(100);
-						writeAllNoCurrent(currentPName()+" ha cambiato colore in "+color);
+						writeAllNoCurrent(currentPName() + " ha cambiato colore in " + color);
 					}
 					break;
 				default:
@@ -254,8 +253,8 @@ public class keephearing implements Runnable {
 			e.printStackTrace();
 		}
 	}
-	
-	public synchronized void writeToCurrentP(int [] m) {
+
+	public synchronized void writeToCurrentP(int[] m) {
 		try {
 			int a = 0;
 			for (HashMap<ObjectInputStream, ObjectOutputStream> b : myServer.players.values()) {
@@ -268,8 +267,8 @@ public class keephearing implements Runnable {
 			e.printStackTrace();
 		}
 	}
-	
-	public synchronized void writeToCurrentP(HashMap<Integer,HashMap<String,String>> card) {
+
+	public synchronized void writeToCurrentP(HashMap<Integer, HashMap<String, String>> card) {
 		try {
 			int a = 0;
 			for (HashMap<ObjectInputStream, ObjectOutputStream> b : myServer.players.values()) {
@@ -346,18 +345,47 @@ public class keephearing implements Runnable {
 		myServer.lastCard.clear();
 
 		myServer.lastCard = trovaCartaCompleteHashMap(idCard);
-		
-		if(isSpecialCard(myServer.playerCards.get(currentPName()).get(idCard))) {
+
+		if (isSpecialCard(myServer.playerCards.get(currentPName()).get(idCard))) {
 			writeToCurrentP(42);
 			myServer.interrupted.set(true);
-			System.out.println("Hai usato una carta speciale");
 		}
+
+		int specialC = isPlusCard(myServer.playerCards.get(currentPName()).get(idCard));
+		HashMap<Integer,HashMap<String,String>> tempCard;
+		
+		switch (specialC) {
+		case -1:
+			for (int i = 0; i < 2; i++) {
+				writeNextP(27);
+				writeNextP(1);
+				tempCard = null;
+				tempCard = pescaProssimaCarta();
+				writeNextP(tempCard);
+				writeNextP(myServer.mazzo.coordinateMazzo(tempCard.values().iterator().next()));
+			}
+			writeNextP(100);
+			writeNextP("Il giocatore " + currentPName() + " ti ha fatto pescare 2 carte");
+			break;
+		case 1:
+			for (int i = 0; i < 4; i++) {
+				writeNextP(27);
+				writeNextP(1);
+				tempCard = null;
+				tempCard = pescaProssimaCarta();
+				writeNextP(tempCard);
+				writeNextP(myServer.mazzo.coordinateMazzo(tempCard.values().iterator().next()));
+			}
+			writeNextP(100);
+			writeNextP("Il giocatore " + currentPName() + " ti ha fatto pescare 4 carte");
+			break;
+		}
+		System.out.println("scos");
 
 		myServer.playerCards.get(currentPName()).remove(idCard);
 
 		myServer.ttApp.set(false);
-		
-		
+
 	}
 
 	public synchronized int[] coordinateMazzo(HashMap<String, String> carta) {
@@ -403,11 +431,10 @@ public class keephearing implements Runnable {
 		HashMap<String, String> tempLastCard = myServer.lastCard.values().iterator().next();
 		String[] b = new String[] { "color", "value" };
 		int equalities = 0;
-		if(isSpecialCard(a)) {
+		if (isSpecialCard(a)) {
 			equalities++;
 			return equalities;
-		}
-		else {
+		} else {
 			for (String c : b) {
 				if (tempLastCard.get(c).compareTo(a.get(c)) == 0)
 					equalities++;
@@ -421,16 +448,18 @@ public class keephearing implements Runnable {
 			a.remove(0);
 		}
 	}
-	public synchronized boolean isSpecialCard(HashMap<String,String> a) {
-		if(a.get("color").compareTo("")==0)
+
+	public synchronized boolean isSpecialCard(HashMap<String, String> a) {
+		if (a.get("color").compareTo("") == 0)
 			return true;
 		return false;
 	}
+
 	public synchronized void writeAllNoCurrent(int message) {
-		for(Entry<String,HashMap<ObjectInputStream,ObjectOutputStream>> a : myServer.players.entrySet()) {
-			if(a.getKey().compareTo(currentPName())!=0) {
+		for (Entry<String, HashMap<ObjectInputStream, ObjectOutputStream>> a : myServer.players.entrySet()) {
+			if (a.getKey().compareTo(currentPName()) != 0) {
 				try {
-					for(ObjectOutputStream b : a.getValue().values()) {
+					for (ObjectOutputStream b : a.getValue().values()) {
 						b.writeObject(message);
 					}
 				} catch (IOException e) {
@@ -440,11 +469,12 @@ public class keephearing implements Runnable {
 			}
 		}
 	}
+
 	public synchronized void writeAllNoCurrent(String message) {
-		for(Entry<String,HashMap<ObjectInputStream,ObjectOutputStream>> a : myServer.players.entrySet()) {
-			if(a.getKey().compareTo(currentPName())!=0) {
+		for (Entry<String, HashMap<ObjectInputStream, ObjectOutputStream>> a : myServer.players.entrySet()) {
+			if (a.getKey().compareTo(currentPName()) != 0) {
 				try {
-					for(ObjectOutputStream b : a.getValue().values()) {
+					for (ObjectOutputStream b : a.getValue().values()) {
 						b.writeObject(message);
 					}
 				} catch (IOException e) {
@@ -453,5 +483,96 @@ public class keephearing implements Runnable {
 				}
 			}
 		}
+	}
+
+	public synchronized void writeNextP(int message) {
+		String nextPlayersName = nextPName();
+		for (Entry<String, HashMap<ObjectInputStream, ObjectOutputStream>> a : myServer.players.entrySet()) {
+			if (a.getKey().compareTo(nextPlayersName) == 0) {
+				try {
+					a.getValue().values().iterator().next().writeObject(message);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	public synchronized void writeNextP(HashMap<Integer, HashMap<String, String>> message) {
+		String nextPlayersName = nextPName();
+		for (Entry<String, HashMap<ObjectInputStream, ObjectOutputStream>> a : myServer.players.entrySet()) {
+			if (a.getKey().compareTo(nextPlayersName) == 0) {
+				try {
+					a.getValue().values().iterator().next().writeObject(message);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	public synchronized void writeNextP(String message) {
+		String nextPlayersName = nextPName();
+		for (Entry<String, HashMap<ObjectInputStream, ObjectOutputStream>> a : myServer.players.entrySet()) {
+			if (a.getKey().compareTo(nextPlayersName) == 0) {
+				try {
+					a.getValue().values().iterator().next().writeObject(message);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	public synchronized void writeNextP(int[] message) {
+		String nextPlayersName = nextPName();
+		for (Entry<String, HashMap<ObjectInputStream, ObjectOutputStream>> a : myServer.players.entrySet()) {
+			if (a.getKey().compareTo(nextPlayersName) == 0) {
+				try {
+					a.getValue().values().iterator().next().writeObject(message);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	public synchronized int isPlusCard(HashMap<String, String> a) {
+		if (a.get("value") == "Pesca")
+			return -1;
+		else if (a.get("value") == "Pesca+")
+			return 1;
+		return 0;
+	}
+
+	public synchronized String nextPName() {
+		int nextPID;
+		if (myServer.currentPlayer + 1 == myServer.players.size())
+			nextPID = 0;
+		else
+			nextPID = myServer.currentPlayer + 1;
+		String nome = "";
+		int c = 0;
+		for (Entry<String, HashMap<ObjectInputStream, ObjectOutputStream>> a : myServer.players.entrySet()) {
+			if (c == nextPID) {
+				nome = a.getKey();
+				break;
+			}
+			c++;
+		}
+		return nome;
+	}
+
+	public synchronized HashMap<Integer, HashMap<String, String>> pescaProssimaCarta() {
+		HashMap<Integer, HashMap<String, String>> tempCard = new HashMap<Integer, HashMap<String, String>>();
+		HashMap<String, String> cartaPescata = myServer.mazzo.pescaCarta();
+		tempCard.put(myServer.idCard, cartaPescata);
+		myServer.playerCards.get(nextPName()).put(myServer.idCard, cartaPescata);
+		myServer.idCard++;
+		return tempCard;
 	}
 }

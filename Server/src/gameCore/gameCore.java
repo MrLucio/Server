@@ -33,10 +33,16 @@ public class gameCore implements Runnable {
 						sendTiming(i);
 	
 					}
-					if(!game.myServer.interrupted.get())
-						nextPlayer();
+					if(!game.myServer.interrupted.get()) {
+						if(checkIfFinished())
+							stillPlaying.set(false);
+						else
+							nextPlayer();
+					}
 				}
 			}
+			System.out.println("Partita terminata !");
+			System.exit(0);
 		} catch (InterruptedException | IOException e) {
 			System.out.println("Connessione interrotta : un utente si è disconnesso");
 			System.exit(0);
@@ -86,6 +92,11 @@ public class gameCore implements Runnable {
 				b.writeObject(t);
 			}
 		}
+	}
+	
+	public synchronized boolean checkIfFinished() {
+		
+		return false;
 	}
 
 }
