@@ -1,2 +1,2 @@
 # Server
-That's my projet for the game UNO, Server side
+That's my project for the game UNO, Server side
