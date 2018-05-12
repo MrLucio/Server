@@ -110,8 +110,8 @@ public class keephearing implements Runnable {
 					break;
 				case 27:
 					String name = (String) inObj.readObject();
-					if (!myServer.hasDraw.get()) {
-						if (name.compareTo(currentPName()) == 0) {
+					if (name.compareTo(currentPName()) == 0) {
+						if (!myServer.hasDraw.get()) {
 							writeToCurrentP(27);
 							writeToCurrentP(1);
 							HashMap<Integer, HashMap<String, String>> tempCard = new HashMap<Integer, HashMap<String, String>>();
@@ -125,11 +125,11 @@ public class keephearing implements Runnable {
 							myServer.hasDraw.set(true);
 						} else {
 							myServer.players.get(name).values().iterator().next().writeObject(27);
-							myServer.players.get(name).values().iterator().next().writeObject(0);
+							myServer.players.get(name).values().iterator().next().writeObject(2);
 						}
 					} else {
 						myServer.players.get(name).values().iterator().next().writeObject(27);
-						myServer.players.get(name).values().iterator().next().writeObject(2);
+						myServer.players.get(name).values().iterator().next().writeObject(0);
 					}
 					break;
 				case 42:
@@ -146,6 +146,12 @@ public class keephearing implements Runnable {
 						myServer.interrupted.set(false);
 						writeAllNoCurrent(100);
 						writeAllNoCurrent(currentPName() + " ha cambiato colore in " + color);
+					}
+					break;
+				case 56:
+					String pName = (String) inObj.readObject();
+					if (pName.compareTo(currentPName()) == 0) {
+						myServer.ttApp.set(false);
 					}
 					break;
 				default:
@@ -365,7 +371,7 @@ public class keephearing implements Runnable {
 				writeNextP(myServer.mazzo.coordinateMazzo(tempCard.values().iterator().next()));
 			}
 			writeNextP(100);
-			writeNextP("Il giocatore " + currentPName() + " ti ha fatto pescare 2 carte");
+			writeNextP("Quell'infame di " + currentPName() + " ti ha fatto pescare 2 carte");
 			break;
 		case 1:
 			for (int i = 0; i < 4; i++) {
@@ -377,10 +383,9 @@ public class keephearing implements Runnable {
 				writeNextP(myServer.mazzo.coordinateMazzo(tempCard.values().iterator().next()));
 			}
 			writeNextP(100);
-			writeNextP("Il giocatore " + currentPName() + " ti ha fatto pescare 4 carte");
+			writeNextP("Quell'infame di " + currentPName() + " ti ha fatto pescare 4 carte");
 			break;
 		}
-		System.out.println("scos");
 
 		myServer.playerCards.get(currentPName()).remove(idCard);
 
