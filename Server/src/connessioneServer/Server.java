@@ -27,6 +27,8 @@ public class Server {
 	public AtomicBoolean ttApp=new AtomicBoolean(true);
 	public AtomicBoolean hasDraw=new AtomicBoolean(false);
 	public AtomicBoolean interrupted = new AtomicBoolean(false);
+	public AtomicBoolean saltaProssimoTurno = new AtomicBoolean(false);
+	public AtomicBoolean invertiPlayers = new AtomicBoolean(false);
 	Thread myNewConnections;
 	public creaMazzo mazzo;
 	public int idCard = 1;

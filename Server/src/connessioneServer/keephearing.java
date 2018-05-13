@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Map.Entry;
@@ -358,8 +359,8 @@ public class keephearing implements Runnable {
 		}
 
 		int specialC = isPlusCard(myServer.playerCards.get(currentPName()).get(idCard));
-		HashMap<Integer,HashMap<String,String>> tempCard;
-		
+		HashMap<Integer, HashMap<String, String>> tempCard;
+
 		switch (specialC) {
 		case -1:
 			for (int i = 0; i < 2; i++) {
@@ -384,6 +385,16 @@ public class keephearing implements Runnable {
 			}
 			writeNextP(100);
 			writeNextP("Quell'infame di " + currentPName() + " ti ha fatto pescare 4 carte");
+			break;
+		}
+
+		int specialC_1 = whichSpecial(myServer.playerCards.get(currentPName()).get(idCard));
+		switch (specialC_1) {
+		case -1:
+			invertiPlayers();
+			break;
+		case 1:
+			saltaProssimoTurno();
 			break;
 		}
 
@@ -545,7 +556,7 @@ public class keephearing implements Runnable {
 			}
 		}
 	}
-	
+
 	public synchronized int isPlusCard(HashMap<String, String> a) {
 		if (a.get("value") == "Pesca")
 			return -1;
@@ -554,12 +565,27 @@ public class keephearing implements Runnable {
 		return 0;
 	}
 
+	public synchronized int whichSpecial(HashMap<String, String> a) {
+		if (a.get("value") == "Inverti")
+			return -1;
+		else if (a.get("value") == "Stop")
+			return 1;
+		return 0;
+	}
+
 	public synchronized String nextPName() {
-		int nextPID;
-		if (myServer.currentPlayer + 1 == myServer.players.size())
-			nextPID = 0;
-		else
-			nextPID = myServer.currentPlayer + 1;
+		int nextPID = 0;
+		if (myServer.invertiPlayers.get()) {
+			if (myServer.currentPlayer == 0)
+				nextPID = myServer.players.size() - 1;
+			else
+				nextPID = myServer.currentPlayer - 1;
+		} else {
+			if (myServer.currentPlayer + 1 == myServer.players.size())
+				nextPID = 0;
+			else
+				nextPID = myServer.currentPlayer + 1;
+		}
 		String nome = "";
 		int c = 0;
 		for (Entry<String, HashMap<ObjectInputStream, ObjectOutputStream>> a : myServer.players.entrySet()) {
@@ -580,4 +606,13 @@ public class keephearing implements Runnable {
 		myServer.idCard++;
 		return tempCard;
 	}
+
+	public synchronized void saltaProssimoTurno() {
+		myServer.saltaProssimoTurno.set(true);
+	}
+
+	public synchronized void invertiPlayers() {
+		myServer.invertiPlayers.set(!myServer.invertiPlayers.get());
+	}
+
 }

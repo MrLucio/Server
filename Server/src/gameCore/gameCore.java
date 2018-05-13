@@ -3,10 +3,11 @@ package gameCore;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 
 public class gameCore implements Runnable {
 
@@ -21,23 +22,28 @@ public class gameCore implements Runnable {
 	public synchronized void run() {
 		try {
 			while (stillPlaying.get()) {
-				if(!game.myServer.interrupted.get()) {
+				if (!game.myServer.interrupted.get()) {
 					sendPlayers();
 					game.myServer.hasDraw.set(false);
 					for (int i = 20; i > 0 && game.myServer.ttApp.get(); i--) {
-						while(game.myServer.interrupted.get()) {
+						while (game.myServer.interrupted.get()) {
 							Thread.sleep(1000);
 							sendTiming(i);
 						}
 						Thread.sleep(1000);
 						sendTiming(i);
-	
+
 					}
-					if(!game.myServer.interrupted.get()) {
-						if(checkIfFinished())
+					if (!game.myServer.interrupted.get()) {
+						if (checkIfFinished())
 							stillPlaying.set(false);
-						else
+						else {
+							if (game.myServer.saltaProssimoTurno.get()) {
+								nextPlayer();
+								game.myServer.saltaProssimoTurno.set(false);
+							}
 							nextPlayer();
+						}
 					}
 				}
 			}
@@ -55,12 +61,22 @@ public class gameCore implements Runnable {
 	}
 
 	public synchronized void nextPlayer() {
-		if (game.myServer.currentPlayer + 1 == game.myServer.players.size())
-			game.myServer.currentPlayer = 0;
-		else
-			game.myServer.currentPlayer++;
+		System.err.println("inverti vale " + game.myServer.invertiPlayers.get() + " e currentP vale "
+				+ game.myServer.currentPlayer);
+		if (game.myServer.invertiPlayers.get()) {
+			if (game.myServer.currentPlayer == 0)
+				game.myServer.currentPlayer = game.myServer.players.size() - 1;
+			else
+				game.myServer.currentPlayer--;
+		} else {
+			if (game.myServer.currentPlayer + 1 == game.myServer.players.size())
+				game.myServer.currentPlayer = 0;
+			else
+				game.myServer.currentPlayer++;
+		}
 		game.myServer.ttApp.set(true);
 	}
+
 	public synchronized void sendPlayers() throws IOException {
 		String nome = "";
 		int c = 0;
@@ -75,7 +91,7 @@ public class gameCore implements Runnable {
 		for (HashMap<ObjectInputStream, ObjectOutputStream> a : game.myServer.players.values()) {
 			for (ObjectOutputStream b : a.values()) {
 				b.writeObject(16);
-				if (c1 ==game.myServer.currentPlayer)
+				if (c1 == game.myServer.currentPlayer)
 					b.writeObject("È il tuo turno");
 				else
 					b.writeObject("È il turno di " + nome);
@@ -93,9 +109,9 @@ public class gameCore implements Runnable {
 			}
 		}
 	}
-	
+
 	public synchronized boolean checkIfFinished() {
-		
+
 		return false;
 	}
 
