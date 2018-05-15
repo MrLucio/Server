@@ -136,14 +136,8 @@ public class keephearing implements Runnable {
 				case 42:
 					String color = (String) inObj.readObject();
 					String nameOfPlayer = (String) inObj.readObject();
-					System.out.println("Ho ricevuto il color " + color);
-					System.out.println("name vale " + nameOfPlayer + " currentName vale " + currentPName());
 					if (nameOfPlayer.compareTo(currentPName()) == 0) {
-						System.out.println(
-								"Mi hanno inviato " + color + " \nlast card vale " + myServer.lastCard.toString());
-						System.out.println("Prima lastCard vale " + myServer.lastCard.toString());
 						myServer.lastCard.values().iterator().next().put("color", color);
-						System.out.println("Ora lastCard vale " + myServer.lastCard.toString());
 						myServer.interrupted.set(false);
 						writeAllNoCurrent(100);
 						writeAllNoCurrent(currentPName() + " ha cambiato colore in " + color);
@@ -153,6 +147,16 @@ public class keephearing implements Runnable {
 					String pName = (String) inObj.readObject();
 					if (pName.compareTo(currentPName()) == 0) {
 						myServer.ttApp.set(false);
+					}
+					break;
+				case 500:
+					String hisName = (String) inObj.readObject();
+					if (hisName.compareTo(currentPName()) == 0) {
+						if (validCards(hisName) == 1) {
+							myServer.uno.replace(hisName, true);
+						} else {
+							writeToPlayer(hisName, 300);
+						}
 					}
 					break;
 				default:
@@ -173,14 +177,14 @@ public class keephearing implements Runnable {
 		}
 	}
 
-	public synchronized void writeToClient(String a) {
-		try {
-			outObj.writeObject(0);
-			outObj.writeObject(a);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public synchronized int validCards(String name) {
+		int c = 0;
+		for (HashMap<String, String> a : myServer.playerCards.get(name).values()) {
+			if (a.get("value") != null) {
+				c++;
+			}
 		}
+		return c;
 	}
 
 	public synchronized void writeToClient(int a) {
@@ -247,6 +251,16 @@ public class keephearing implements Runnable {
 		return null;
 	}
 
+	public synchronized void writeToPlayer(String name, int message) {
+		for (ObjectOutputStream a : myServer.players.get(name).values()) {
+			try {
+				a.writeObject(message);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	public synchronized void writeToCurrentP(int m) {
 		try {
 			int a = 0;
@@ -256,7 +270,6 @@ public class keephearing implements Runnable {
 				a++;
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -270,7 +283,6 @@ public class keephearing implements Runnable {
 				a++;
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -284,7 +296,18 @@ public class keephearing implements Runnable {
 				a++;
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public synchronized void writeToEveryone(String message) {
+		try {
+			for (HashMap<ObjectInputStream, ObjectOutputStream> a : myServer.players.values()) {
+				for (ObjectOutputStream b : a.values()) {
+					b.writeObject(message);
+				}
+			}
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -297,7 +320,6 @@ public class keephearing implements Runnable {
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -310,7 +332,6 @@ public class keephearing implements Runnable {
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -323,7 +344,6 @@ public class keephearing implements Runnable {
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -336,7 +356,6 @@ public class keephearing implements Runnable {
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -613,6 +632,8 @@ public class keephearing implements Runnable {
 
 	public synchronized void invertiPlayers() {
 		myServer.invertiPlayers.set(!myServer.invertiPlayers.get());
+		if (myServer.players.size() == 2)
+			saltaProssimoTurno();
 	}
 
 }

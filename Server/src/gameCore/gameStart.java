@@ -96,6 +96,9 @@ public class gameStart extends Thread {
 					nowOutObj.writeObject(playersName);
 				}
 			}
+			for(String name : myServer.players.keySet()) {
+				myServer.uno.put(name, false);
+			}
 			System.out.println("Player cards to string "+myServer.playerCards.toString());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

@@ -29,6 +29,8 @@ public class Server {
 	public AtomicBoolean interrupted = new AtomicBoolean(false);
 	public AtomicBoolean saltaProssimoTurno = new AtomicBoolean(false);
 	public AtomicBoolean invertiPlayers = new AtomicBoolean(false);
+	public HashMap<String,Boolean> uno = new HashMap<String,Boolean>();
+	public String hasToDraw=null;
 	Thread myNewConnections;
 	public creaMazzo mazzo;
 	public int idCard = 1;
@@ -46,7 +48,6 @@ public class Server {
 			myNewConnections.start();
 			this.myNewConnections=myNewConnections;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return socket;
